@@ -1,6 +1,5 @@
 pragma solidity >=0.4.21 <0.7.0;
 
-import "./DateTimeLibrary.sol";
 import "./UserManager.sol";
 
 contract Ballot {
@@ -52,7 +51,8 @@ contract Ballot {
         string memory sDescription,
         string memory lDescription,
         string memory eCriteria,
-        string memory pollCandidates
+        string memory candidateOne,
+        string memory candidateTwo
     ) public {
             parent = msg.sender;
             owner = oAddress;
@@ -61,27 +61,20 @@ contract Ballot {
             shortDescription = sDescription;
             longDescription = lDescription;
             eligibilityCriteria = eCriteria;
-            // var s = pollCandidates.toSlice();
-            // var delim = ";".toSlice();
-            // var parts = new string[](s.count(delim) + 1);
-            // for(uint i = 0; i < parts.length; i++) {
-            //     candidates.push(Candidate({
-            //         name: s.split(delim).toString(),
-            //         voteCount: 0
-            //     }));
-            // }
+            candidates.push(Candidate({
+                name: candidateOne,
+                voteCount: 0
+            }));
+            candidates.push(Candidate({
+                name: candidateTwo,
+                voteCount: 0
+            }));
     }
 
-    function setStartTime(uint sYear, uint sMonth, uint sDay, uint sHour, uint sMinute) public {
-        times[0] = DateTimeLibrary.timestampFromDateTime(sYear, sMonth, sDay, sHour, sMinute, 0);
-    }
-
-    function setEndTime(uint eYear, uint eMonth, uint eDay, uint eHour, uint eMinute) public {
-        times[1] = DateTimeLibrary.timestampFromDateTime(eYear, eMonth, eDay, eHour, eMinute, 0);
-    }
-
-    function setRevealTime(uint rYear, uint rMonth, uint rDay, uint rHour, uint rMinute) public {
-        times[2] = DateTimeLibrary.timestampFromDateTime(rYear, rMonth, rDay, rHour, rMinute, 0);
+    function setTimes (uint sTime, uint eTime, uint rTime) public {
+        times[0] = sTime;
+        times[1] = eTime;
+        times[2] = rTime;
     }
 
     function uintToString (uint input) private pure returns (string memory) {
@@ -118,7 +111,6 @@ contract Ballot {
     function voteToPoll(string memory token, uint candidate) public onlyAuthorizedVoter(token) {
         candidates[candidate].voteCount++;
         UserManager(parent).updateVotedPolls(address(this), msg.sender);
-        // TODO: Return txn id for future verification
     }
 
     function revealPollResults() public onlyOwner {

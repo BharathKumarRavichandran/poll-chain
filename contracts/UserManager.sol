@@ -8,6 +8,7 @@ contract UserManager {
         address[] createdPolls;
         address[] registeredPolls;
         address[] votedPolls;
+        mapping(address => bytes32) txnHashes;
         string name;
     }
 
@@ -56,6 +57,14 @@ contract UserManager {
         return allUsers[msg.sender].votedPolls;
     }
 
+    function getTxnHashForPoll(address poll) public view returns (bytes32) {
+        return allUsers[msg.sender].txnHashes[poll];
+    }
+
+    function updateTxnHashForPoll(address poll, bytes32 txnHash) public {
+        allUsers[msg.sender].txnHashes[poll] = txnHash;
+    }
+
     function registerForPoll(address poll) public {
         allUsers[msg.sender].registeredPolls.push(poll);
     }
@@ -69,9 +78,11 @@ contract UserManager {
         string memory sDescription,
         string memory lDescription,
         string memory eCriteria,
-        string memory pCandidates
+        string memory candidateOne,
+        string memory candidateTwo
     ) public {
-        Ballot newPoll = new Ballot(msg.sender, allUsers[msg.sender].name, pName, sDescription, lDescription, eCriteria, pCandidates);
+        Ballot newPoll = new Ballot(msg.sender, allUsers[msg.sender].name, pName, sDescription,
+            lDescription, eCriteria, candidateOne, candidateTwo);
         allPolls.push(address(newPoll));
         allUsers[msg.sender].createdPolls.push(address(newPoll));
         emit createdNewPoll(address(newPoll));
