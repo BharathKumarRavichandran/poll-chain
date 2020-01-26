@@ -1,7 +1,7 @@
 pragma solidity >=0.4.21 <0.7.0;
 
 import "./DateTimeLibrary.sol";
-import "./StringsLibrary.sol";
+import "./UserManager.sol";
 
 contract Ballot {
 
@@ -11,6 +11,7 @@ contract Ballot {
     }
 
     address owner;
+    address parent;
     string ownerName;
     string pollName;
     string shortDescription;
@@ -44,27 +45,31 @@ contract Ballot {
         _;
     }
 
-    constructor (string memory oName,
+    constructor (
+        address oAddress,
+        string memory oName,
         string memory pName,
         string memory sDescription,
         string memory lDescription,
         string memory eCriteria,
         string memory pollCandidates
     ) public {
+            parent = msg.sender;
+            owner = oAddress;
             ownerName = oName;
             pollName = pName;
             shortDescription = sDescription;
             longDescription = lDescription;
             eligibilityCriteria = eCriteria;
-            var s = pollCandidates.toSlice();
-            var delim = ";".toSlice();
-            var parts = new string[](s.count(delim) + 1);
-            for(uint i = 0; i < parts.length; i++) {
-                candidates.push(Candidate({
-                    name: s.split(delim).toString(),
-                    voteCount: 0
-                }));
-            }
+            // var s = pollCandidates.toSlice();
+            // var delim = ";".toSlice();
+            // var parts = new string[](s.count(delim) + 1);
+            // for(uint i = 0; i < parts.length; i++) {
+            //     candidates.push(Candidate({
+            //         name: s.split(delim).toString(),
+            //         voteCount: 0
+            //     }));
+            // }
     }
 
     function setStartTime(uint sYear, uint sMonth, uint sDay, uint sHour, uint sMinute) public {
@@ -112,7 +117,7 @@ contract Ballot {
 
     function voteToPoll(string memory token, uint candidate) public onlyAuthorizedVoter(token) {
         candidates[candidate].voteCount++;
-        // TODO: ParentContract.addToVotedPolls(thisContract.address);
+        UserManager(parent).updateVotedPolls(address(this), msg.sender);
         // TODO: Return txn id for future verification
     }
 

@@ -11,6 +11,20 @@ contract UserManager {
         string name;
     }
 
+    event registeredForNewPoll(
+        address poll,
+        address user
+    );
+
+    event createdNewPoll(
+        address poll
+    );
+
+    event votedForNewPoll(
+        address poll,
+        address user
+    );
+
     mapping(address => User) private allUsers;
 
     function createUser(string memory username) public {
@@ -46,16 +60,20 @@ contract UserManager {
         allUsers[msg.sender].registeredPolls.push(poll);
     }
 
+    function updateVotedPolls(address poll, address user) public {
+        allUsers[user].votedPolls.push(poll);
+    }
+
     function createNewPoll(
         string memory pName,
         string memory sDescription,
         string memory lDescription,
         string memory eCriteria,
         string memory pCandidates
-    ) public returns (address) {
-        Ballot newPoll = new Ballot(allUsers[msg.sender].name, pName, sDescription, lDescription, eCriteria, pCandidates);
+    ) public {
+        Ballot newPoll = new Ballot(msg.sender, allUsers[msg.sender].name, pName, sDescription, lDescription, eCriteria, pCandidates);
         allPolls.push(address(newPoll));
         allUsers[msg.sender].createdPolls.push(address(newPoll));
-        return address(newPoll);
+        emit createdNewPoll(address(newPoll));
     }
 }
